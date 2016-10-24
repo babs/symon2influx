@@ -74,7 +74,7 @@ def main():
                 "%(name)s,host=%(host)s%(arg)s %(samples)s %(ts)d"
                 % {"name":measurement_prefix + sample.name,
                    "host": host.replace(' ', '\\ '),
-                   "arg": ",argument=" + sample.argument if sample.argument else "",
+                   "arg": ",%s=%s" % (sample.argname, sample.argument) if sample.argument else "",
                    "samples": ",".join([k + "=" + str(v) for k, v in sample.values.items()]),
                    "ts"   :pkt.timestamp * 10 ** 9
                   }

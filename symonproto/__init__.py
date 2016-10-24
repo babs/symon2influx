@@ -7,9 +7,10 @@ import struct
 
 class SymonElement(object):
     """Symon sample representation"""
-    def __init__(self, binid, name, argument, binlen):
+    def __init__(self, binid, name, argname, argument, binlen):
         self.binid = binid
         self.name = name
+        self.argname = argname
         self.argument = argument
         self.binlen = binlen
         self.values = {}
@@ -22,13 +23,20 @@ class SymonType(object):
     # '#' == u_int16/100 [struct: H]
     # 'd' == u_int64/1000000 [struct: Q]
 
-    def __init__(self, binid, stype, fmt, fieldnames):
+    def __init__(self, binid, stype, fmt, fieldnames, argname=None):
         self.binid = binid
         self.stype = stype
         self.name = stype.lower().split("_")[1]
         self.fmt = fmt
         self.struct_fmt = ">" + fmt.replace('#', 'H').replace('d', 'Q')
         self.fieldnames = fieldnames
+        if argname == None:
+            self.argname = self.name
+            while self.argname[-1].isdigit():
+                self.argname = self.argname[:-1]
+        else:
+            self.argname = argname
+
         self.struct_len = struct.calcsize(self.struct_fmt)
 
     def __str__(self):
@@ -40,7 +48,7 @@ class SymonType(object):
         rec_len = 2 + len(argument)
         offset += rec_len
 
-        retval = SymonElement(self.binid, self.name, argument.decode('utf-8'),
+        retval = SymonElement(self.binid, self.name, self.argname, argument.decode('utf-8'),
                               rec_len + self.struct_len)
 
         result = list(struct.unpack_from(self.struct_fmt, payload, offset))
@@ -63,15 +71,22 @@ class SymonType(object):
 
 SymonType.types = {
     b"\x00": SymonType(0, "MT_IO1", "QQQ",
-                       ['total_transfers', 'total_seeks', 'total_bytes']),
+                       ['total_transfers', 'total_seeks', 'total_bytes'],
+                       argname="disk"),
+
     b"\x01": SymonType(1, "MT_CPU", "#####",
-                       ['user', 'nice', 'system', 'interrupt', 'idle']),
+                       ['user', 'nice', 'system', 'interrupt', 'idle'],
+                       argname="cpu"),
+
     b"\x02": SymonType(2, "MT_MEM1", "LLLLL",
                        ['real_active', 'real_total', 'free', 'swap_used', 'swap_total']),
+
     b"\x03": SymonType(3, "MT_IF1", "LLLLLLLLLL",
                        ['packets_in', 'packets_out', 'bytes_in', 'bytes_out',
                         'multicasts_in', 'multicasts_out', 'errors_in', 'errors_out',
-                        'collisions', 'drops']),
+                        'collisions', 'drops'],
+                       argname="interface"),
+
     b"\x04": SymonType(4, "MT_PF", "QQQQQQQQQQQQQQQQQQQQQQ",
                        ['bytes_v4_in', 'bytes_v4_out', 'bytes_v6_in', 'bytes_v6_out',
                         'packets_v4_in_pass', 'packets_v4_in_drop', 'packets_v4_out_pass',
@@ -80,45 +95,65 @@ SymonType.types = {
                         'states_searches', 'states_inserts', 'states_removals',
                         'counters_match', 'counters_badoffset', 'counters_fragment',
                         'counters_short', 'counters_normalize', 'counters_memory']),
+
     b"\x05": SymonType(5, "MT_DEBUG", "LLLLLLLLLLLLLLLLLLLL",
                        ['debug0', 'debug1', 'debug2', 'debug3', 'debug4', 'debug5',
                         'debug6', 'debug7', 'debug8', 'debug9', 'debug10', 'debug11',
                         'debug12', 'debug13', 'debug14', 'debug15', 'debug16',
                         'debug17', 'debug18', 'debug19']),
+
     b"\x06": SymonType(6, "MT_PROC", "LQQQL#LL",
                        ['number', 'uticks', 'sticks', 'iticks', 'cpusec', 'cpupct',
                         'procsz', 'rsssz']),
+
     b"\x07": SymonType(7, "MT_MBUF", "LLLLLLLLLLLLLLL",
                        ['totmbufs', 'mt_data', 'mt_oobdata', 'mt_control', 'mt_header',
                         'mt_ftable', 'mt_soname', 'mt_soopts', 'pgused', 'pgtotal',
                         'totmem', 'totpct', 'm_drops', 'm_wait', 'm_drain']),
+
     b"\x08": SymonType(8, "MT_SENSOR", "d", ['value']),
+
     b"\x09": SymonType(9, "MT_IO2", "QQQQQ",
-                       ['rxfer', 'wxfer', 'seeks', 'rbytes', 'wbytes']),
+                       ['rxfer', 'wxfer', 'seeks', 'rbytes', 'wbytes'],
+                       argname="disk"),
+
     b"\x0a": SymonType(10, "MT_PFQ", "QQQQ",
                        ['sent_bytes', 'sent_packets', 'drop_bytes', 'drop_packets']),
+
     b"\x0b": SymonType(11, "MT_DF", "QQQQQQQ",
                        ['blocks', 'bfree', 'bavail', 'files',
-                        'ffree', 'syncwrites', 'asyncwrites']),
+                        'ffree', 'syncwrites', 'asyncwrites'],
+                       argname="disk"),
+
     b"\x0c": SymonType(12, "MT_MEM2", "QQQQQ",
                        ['real_active', 'real_total', 'free', 'swap_used', 'swap_total']),
+
     b"\x0d": SymonType(13, "MT_IF2", "QQQQQQQQQQ",
                        ['ipackets', 'opackets', 'ibytes', 'obytes', 'imcasts', 'omcasts',
-                        'ierrors', 'oerrors', 'collisions', 'drops']),
+                        'ierrors', 'oerrors', 'collisions', 'drops'],
+                       argname="interface"),
+
     b"\x0e": SymonType(14, "MT_CPUIOW", "######",
-                       ['user', 'nice', 'interrupt', 'idle', 'iowait']),
+                       ['user', 'nice', 'interrupt', 'idle', 'iowait'],
+                       argname="cpu"),
+
     b"\x0f": SymonType(15, "MT_SMART", "BBBBBBBBBBBB",
                        ['read_error_rate', 'reallocated_sectors', 'spin_retries', 'air_flow_temp',
                         'temperature', 'reallocations', 'current_pending', 'uncorrectables',
                         'soft_read_error_rate', 'g_sense_error_rate', 'temperature2',
-                        'free_fall_protection']),
+                        'free_fall_protection'],
+                       argname="drive"),
+
     b"\x10": SymonType(16, "MT_LOAD", "###",
                        ['load1', 'load5', 'load15']),
+
     b"\x11": SymonType(17, "MT_FLUKSO", "d",
                        ['value']),
+
     b"\x12": SymonType(18, "MT_TEST", "QQQQddddLLLLHHHH####BBBB",
                        ['', '', '', '', '', '', '', '', '', '', '', '',
                         '', '', '', '', '', '', '', '', '', '', '', '']),
+
     b"\x13": SymonType(19, "MT_EOT", "", []),
 }
 
