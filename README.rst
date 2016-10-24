@@ -2,18 +2,18 @@
 symon2influx
 ============
 
-symon2influx listens to symon packets, decode them and send them to an influxdb instance.
+symon2influx listens to symon packets, decode them and send them to an InfluxDB instance.
 
-Symon is an awsome software that I use for years now, with symux and syweb, mainly for my openbsd servers.
-That said, as I deploy more and more telegraf/influxdb/grafana stacks in my personal and professional environments, I try to aggregate all the information at the same place.
+symon is an awsome software that I use for years now, with symux and syweb, mainly for my OpenBSD servers (pro and perso).
+That said, as I deploy more and more Telegraf/InfluxDB/Grafana stacks in my personal and professional environments, I try to aggregate all the information at the same place.
 That's where symon2influx comes into play.
 
 symon_ is a system monitor for FreeBSD, NetBSD, OpenBSD and Linux. It can be used to obtain accurate and up to date information on the performance of a number of systems.
 
-influxdb_ is an opensource sacalable datastore for metrics, events, and real-time analytics made by influxdata.
+InfluxDB_ is an opensource sacalable datastore for metrics, events, and real-time analytics made by influxdata.
 
-.. _symon: https://wpd.home.xs4all.nl/symon/
-.. _influxdb: https://github.com/influxdata/influxdb
+.. _Symon: https://wpd.home.xs4all.nl/symon/
+.. _InfluxDB: https://github.com/influxdata/influxdb
 
 
 Configuration
