@@ -65,7 +65,7 @@ def main():
 
     # Main loop
     while True:
-        data, remote = sock.recvfrom(1500)
+        data, remote = sock.recvfrom(32768)
         host = ""
         try:
             host = socket.gethostbyaddr(remote[0])[0]
